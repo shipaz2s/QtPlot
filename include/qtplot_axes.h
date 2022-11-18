@@ -1,5 +1,6 @@
 #include <QWidget>
 #include <QLabel>
+#include <QPoint>
 
 #include <vector>
 
@@ -61,4 +62,8 @@ private:
 	QBrush axis_brush;
 
 	QFontMetrics* fm_ptr;
+
+	QPoint plot_start_point;
+	int plot_width;
+	int plot_heigth;
 };

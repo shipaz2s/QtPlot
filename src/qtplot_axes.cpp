@@ -86,9 +86,15 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 
 	x_delta = (width - 2 * horizontal_intend - label_width - hatch_length - xLabel_width)/ 10;
 
+	int x_start = label_width + horizontal_intend + hatch_length;
+	int x_end = width - horizontal_intend - xLabel_width;
+
+	int y_start = height - label_heigth - vertical_intend - hatch_length;
+	int y_end = label_heigth + vertical_intend;
+
 	if (x_delta >= min_delta) {
 		int i;
-		for (i = label_width + horizontal_intend + hatch_length; i <= width - horizontal_intend - xLabel_width; i+= x_delta) {
+		for (i = x_start; i <= x_end; i+= x_delta) {
 			painter.drawLine(i, height - hatch_length - label_heigth - vertical_intend, i, height - label_heigth - vertical_intend);
 		}
 		plot_width_hint = i - x_delta;
@@ -98,25 +104,29 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 
 	if (y_delta >= min_delta) {
 		int i;
-		for (i = height - label_heigth - vertical_intend - hatch_length; i >= label_heigth + vertical_intend; i -= y_delta) {
+		for (i = y_start; i >= y_end; i -= y_delta) {
 			painter.drawLine(label_width + horizontal_intend, i, label_width + horizontal_intend + hatch_length, i);
 		}
 		plot_height_hint = i + y_delta;
 	}
 
-	painter.drawLine(	label_width + horizontal_intend + hatch_length,
-						height - label_heigth - vertical_intend - hatch_length,
-						label_width + horizontal_intend + hatch_length,
+	painter.drawLine(	x_start,
+						y_start,
+						x_start,
 						plot_height_hint
 					);
 
-	painter.drawLine(	label_width + horizontal_intend + hatch_length,
-						height - label_heigth - vertical_intend - hatch_length,
+	painter.drawLine(	x_start,
+						y_start,
 						plot_width_hint,
-						height - label_heigth - vertical_intend - hatch_length
+						y_start
 					);
 
 	painter.end();
+
+	plot_start_point = QPoint(x_start, y_start);
+	plot_width = plot_width_hint - x_start;
+	plot_heigth = plot_height_hint - y_start;
 }
 
 void QtPlotAxes::resizeEvent(QResizeEvent* event)
@@ -124,11 +134,12 @@ void QtPlotAxes::resizeEvent(QResizeEvent* event)
 	int height = this->height();
 	int width = this->width();
 
-	xAxis_label->move(width - xLabel_width, height - label_heigth - vertical_intend - hatch_length - label_heigth / 2);
-	yAxis_label->move(label_width + horizontal_intend + hatch_length - yLabel_width / 2, 0);
-
 	int x_start = label_width + horizontal_intend + hatch_length;
 	int y_start = height - label_heigth - vertical_intend - hatch_length - label_heigth / 2;
+
+	xAxis_label->move(width - xLabel_width, y_start);
+	yAxis_label->move(x_start - yLabel_width / 2, 0);
+
 
 
 	int x_add_length = 0;
