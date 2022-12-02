@@ -41,8 +41,19 @@ QtPlotAxes::QtPlotAxes(QWidget* parent) :
 
 	// to set variables used in resizeEvent (which are usually set in paint event), cause paintEvent is called after resizeEvent
 	resize(640, 480);
+
 	x_delta = (this->width() - 2 * horizontal_intend - label_width - hatch_length - xLabel_width)/ 10;
 	y_delta = (this->height() - 2 * vertical_intend  - label_heigth - hatch_length - label_heigth) / 10;
+
+	int x_start = label_width + horizontal_intend + hatch_length;
+	int y_start = 480 - label_heigth - vertical_intend - hatch_length;
+	int plot_width_hint = x_start + x_delta * 10;
+	int plot_height_hint = y_start - y_delta * 10;
+
+	plot_start_point = QPoint(x_start,
+		plot_height_hint);
+	plot_size = QSize(plot_width_hint - x_start,
+		y_start - plot_height_hint);
 }
 
 QSize QtPlotAxes::minimumSizeHint() const {
@@ -57,16 +68,30 @@ QSize QtPlotAxes::sizeHint() const {
 
 void QtPlotAxes::setSegment(QtPlotType::Axis axis, double min_value, double max_value)
 {
+	double dx;
+	double dy;
 	switch (axis)
 	{
 	case QtPlotType::Axis::X :
 		x_min_value = min_value;
-		y_max_value = max_value;
+		x_max_value = max_value;
+
+		dx = (x_max_value - x_min_value) / 10;
+		for (int i = 0; i < 11; ++i) {
+			x_lables[i]->setText( locale().toString(x_min_value + dx * i, 'g') );
+		}
+
 		break;
 
 	case QtPlotType::Axis::Y :
-		x_min_value = min_value;
+		y_min_value = min_value;
 		y_max_value = max_value;
+
+		dy = (y_max_value - y_min_value) / 10;
+		for (int i = 0; i < 11; ++i) {
+			y_lables[i]->setText( locale().toString(y_min_value + dy * i, 'g') );
+		}
+
 		break;
 	
 	default:
@@ -124,12 +149,16 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 
 	painter.end();
 
-	plot_start_point = QPoint(x_start, y_start);
-	plot_width = plot_width_hint - x_start;
-	plot_heigth = plot_height_hint - y_start;
+	plot_start_point = QPoint(x_start, plot_height_hint);
+	plot_size = QSize(plot_width_hint - x_start, y_start - plot_height_hint);
 }
 
 void QtPlotAxes::resizeEvent(QResizeEvent* event)
+{
+	updateLabels();
+}
+
+void QtPlotAxes::updateLabels()
 {
 	int height = this->height();
 	int width = this->width();
@@ -172,4 +201,5 @@ void QtPlotAxes::resizeEvent(QResizeEvent* event)
 			last_y_pos = y_start - i * y_delta;
 		}
 	}
+	repaint();
 }
