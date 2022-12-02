@@ -1,3 +1,9 @@
+#pragma once
+
+#include <QWidget>
+
+#include "qtplot.h"
+#include "qtplot_axes.h"
 
 namespace QtPlotType
 {
@@ -8,3 +14,14 @@ namespace QtPlotType
 		Histogram
 	};
 }
+
+class QtPlotWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	QtPlotWidget(QWidget* parent);
+
+	QtPlot* plot;
+	QtPlotAxes* axes;
+};
