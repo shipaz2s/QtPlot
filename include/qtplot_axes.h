@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPoint>
+#include <QSize>
 
 #include <vector>
 
@@ -25,6 +26,9 @@ public:
 	QSize sizeHint() const override;
 
 	void setSegment(QtPlotType::Axis axis, double min_value, double max_value);
+	QPoint getPlotStartPoint() {return plot_start_point;};
+	QSize getPlotSize() {return plot_size;};
+	void updateLabels();
 
 protected:
 	void paintEvent(QPaintEvent* event) override;
@@ -66,6 +70,5 @@ private:
 	QFontMetrics* fm_ptr;
 
 	QPoint plot_start_point;
-	int plot_width;
-	int plot_heigth;
+	QSize plot_size;
 };
