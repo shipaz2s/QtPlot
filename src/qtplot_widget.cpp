@@ -1,12 +1,11 @@
 #include "qtplot_widget.h"
 
-#include <QEvent>
-
 QtPlotWidget::QtPlotWidget(QWidget* parent) :
 	QWidget(parent)
 {
 	axes = new QtPlotAxes(this);
 	plot = new QtPlot(this);
+<<<<<<< HEAD
 <<<<<<< HEAD
 	plot_start_point = axes->getPlotStartPoint();
 	plot_size = axes->getPlotSize();
@@ -66,4 +65,6 @@ void QtPlotWidget::changeEvent(QEvent* event)
 
 	plot->raise();
 >>>>>>> f2f3edf (for merge)
+=======
+>>>>>>> main
 }
