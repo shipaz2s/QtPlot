@@ -5,4 +5,7 @@ QtPlotWidget::QtPlotWidget(QWidget* parent) :
 {
 	axes = new QtPlotAxes(this);
 	plot = new QtPlot(this);
+	plot->setBackgroundRole
+
+	plot->raise();
 }
