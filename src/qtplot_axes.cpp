@@ -1,4 +1,5 @@
 #include <qtplot_axes.h>
+
 #include <QPainter>
 #include <QLocale>
 
@@ -97,7 +98,7 @@ void QtPlotAxes::setSegment(QtPlotType::Axis axis, double min_value, double max_
 	default:
 		break;
 	}
-	
+
 }
 
 void QtPlotAxes::paintEvent(QPaintEvent* event)
@@ -109,8 +110,6 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 	
 	int width = this->width();
 	int height = this->height();
-
-	x_delta = (width - 2 * horizontal_intend - label_width - hatch_length - xLabel_width)/ 10;
 
 	int x_start = label_width + horizontal_intend + hatch_length;
 	int x_end = width - horizontal_intend - xLabel_width;
@@ -125,8 +124,6 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 		}
 		plot_width_hint = i - x_delta;
 	}
-
-	y_delta = (height - 2 * vertical_intend  - label_heigth - hatch_length - label_heigth) / 10;
 
 	if (y_delta >= min_delta) {
 		int i;
@@ -149,9 +146,6 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 					);
 
 	painter.end();
-
-	plot_start_point = QPoint(x_start, plot_height_hint);
-	plot_size = QSize(plot_width_hint - x_start, y_start - plot_height_hint);
 }
 
 void QtPlotAxes::resizeEvent(QResizeEvent* event)
@@ -166,6 +160,9 @@ void QtPlotAxes::updateLabels()
 
 	int x_start = label_width + horizontal_intend + hatch_length;
 	int y_start = height - label_heigth - vertical_intend - hatch_length - label_heigth / 2;
+
+	x_delta = (width - 2 * horizontal_intend - label_width - hatch_length - xLabel_width)/ 10;
+	y_delta = (height - 2 * vertical_intend  - label_heigth - hatch_length - label_heigth) / 10;
 
 	xAxis_label->move(width - xLabel_width, y_start);
 	yAxis_label->move(x_start - yLabel_width / 2, 0);
@@ -202,5 +199,7 @@ void QtPlotAxes::updateLabels()
 			last_y_pos = y_start - i * y_delta;
 		}
 	}
-	repaint();
+
+	plot_start_point = QPoint(x_start, height - label_heigth - vertical_intend - hatch_length - 10 * y_delta);
+	plot_size = QSize(10 * x_delta, 10 * y_delta);
 }
