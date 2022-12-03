@@ -1,13 +1,16 @@
 #include <QApplication>
 
-#include <qtplot_axes.h>
+#include <qtplot_widget.h>
 
 int main(int argc, char** argv)
 {
 	QApplication app(argc, argv);
 
-	QtPlotAxes axes;
-	axes.show();
+	QtPlotWidget wgt;
+	wgt.show();
+
+	// QtPlotAxes axes;
+	// axes.show();
 
 	return app.exec();
 }
