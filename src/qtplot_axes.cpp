@@ -97,6 +97,7 @@ void QtPlotAxes::setSegment(QtPlotType::Axis axis, double min_value, double max_
 	default:
 		break;
 	}
+	
 }
 
 void QtPlotAxes::paintEvent(QPaintEvent* event)
