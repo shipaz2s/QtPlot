@@ -19,6 +19,15 @@ public:
 	QSize minimumSizeHint() const override;
 	QSize sizeHint() const override;
 
+	void setData(const double* y_value_ptr, size_t size) {plot->setData(y_value_ptr, size);};
+	void setData(const double* x_value_ptr, const double* y_value_ptr, size_t size) {plot->setData(x_value_ptr, y_value_ptr, size);};
+	void setData(QtPlotType::Curve_list& value, size_t size) {plot->setData(value, size);};
+
+	void addData(const double* y_value_ptr, size_t size) {plot->addData(y_value_ptr, size);};
+	void addData(const double* x_value_ptr, const double* y_value_ptr, size_t size) {plot->addData(x_value_ptr, y_value_ptr, size);};
+	void setInterval(const QtPlotType::QtPlotInterval& new_interval) { plot->setInterval(new_interval); };
+	void setInterval(const QtPlotType::Axis axis, const QtPlotType::QtPlotAxisInterval& new_interval) { plot->setInterval(axis, new_interval); };
+
 protected:
 	void paintEvent(QPaintEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;

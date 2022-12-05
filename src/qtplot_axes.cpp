@@ -33,11 +33,22 @@ QtPlotAxes::QtPlotAxes(QWidget* parent) :
 	x_lables.reserve(10);
 	y_lables.reserve(10);
 
-	double dx = (x_max_value - x_min_value) / 10;
-	double dy = (y_max_value - y_min_value) / 10;
+	// double x_min_value = 0.;
+	// double x_max_value = 1000.;
+
+	// double y_min_value = 0.;
+	// double y_max_value = 1000.;
+
+	interval[QtPlotType::Axis::X].from = 0.;
+	interval[QtPlotType::Axis::X].to = 1000.;
+	interval[QtPlotType::Axis::Y].from = 0.;
+	interval[QtPlotType::Axis::Y].to = 1000.;
+
+	double dx = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / 10;
+	double dy = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / 10;
 	for (int i = 0; i < 11; ++i) {
-		x_lables.push_back( new QLabel( locale().toString(x_min_value + dx * i, 'g'), this) );
-		y_lables.push_back( new QLabel( locale().toString(y_min_value + dy * i, 'g'), this) );
+		x_lables.push_back( new QLabel( locale().toString(interval[QtPlotType::Axis::X].from + dx * i, 'g'), this) );
+		y_lables.push_back( new QLabel( locale().toString(interval[QtPlotType::Axis::Y].from + dy * i, 'g'), this) );
 	}
 
 	// to set variables used in resizeEvent (which are usually set in paint event), cause paintEvent is called after resizeEvent
@@ -69,36 +80,58 @@ QSize QtPlotAxes::sizeHint() const {
 
 void QtPlotAxes::setSegment(QtPlotType::Axis axis, double min_value, double max_value)
 {
-	double dx;
-	double dy;
+	interval[axis].from = min_value;
+	interval[axis].to = max_value;
+
+	double delta = (interval[axis].to - interval[axis].from) / 10;
+
 	switch (axis)
 	{
 	case QtPlotType::Axis::X :
-		x_min_value = min_value;
-		x_max_value = max_value;
-
-		dx = (x_max_value - x_min_value) / 10;
 		for (int i = 0; i < 11; ++i) {
-			x_lables[i]->setText( locale().toString(x_min_value + dx * i, 'g') );
+			x_lables[i]->setText( locale().toString(interval[axis].from + delta * i, 'g') );
+			x_lables[i]->adjustSize();
 		}
 
 		break;
 
 	case QtPlotType::Axis::Y :
-		y_min_value = min_value;
-		y_max_value = max_value;
-
-		dy = (y_max_value - y_min_value) / 10;
 		for (int i = 0; i < 11; ++i) {
-			y_lables[i]->setText( locale().toString(y_min_value + dy * i, 'g') );
+			y_lables[i]->setText( locale().toString(interval[axis].from + delta * i, 'g') );
+			y_lables[i]->adjustSize();
 		}
 
 		break;
 	
+	case QtPlotType::Axis::Z :
+
+		break;
+
 	default:
+		for (int i = 0; i < 11; ++i) {
+			x_lables[i]->setText( locale().toString(interval[axis].from + delta * i, 'g') );
+		}
+		
 		break;
 	}
+}
 
+void QtPlotAxes::setInterval(const QtPlotType::QtPlotInterval& new_interval)
+{
+	interval = new_interval;
+
+	double delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / 10;
+	double delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / 10;
+
+	for (int i = 0; i < 11; ++i) {
+		x_lables[i]->setText( locale().toString(interval[QtPlotType::Axis::X].from + delta_x * i, 'g') );
+		x_lables[i]->adjustSize();
+	}
+
+	for (int i = 0; i < 11; ++i) {
+		y_lables[i]->setText( locale().toString(interval[QtPlotType::Axis::Y].from + delta_y * i, 'g') );
+		y_lables[i]->adjustSize();
+	}
 }
 
 void QtPlotAxes::paintEvent(QPaintEvent* event)

@@ -11,6 +11,8 @@
 
 class QtPlotAxes: public QWidget
 {
+	Q_OBJECT
+
 public:
 	QtPlotAxes(QWidget* parent = nullptr);
 
@@ -18,20 +20,23 @@ public:
 	QSize sizeHint() const override;
 
 	void setSegment(QtPlotType::Axis axis, double min_value, double max_value);
+	void setInterval(const QtPlotType::QtPlotInterval& new_interval);
 	QPoint getPlotStartPoint() {return plot_start_point;};
 	QSize getPlotSize() {return plot_size;};
 	void updateLabels();
+
+public slots:
+	void slotSetInterval(const QtPlotType::QtPlotInterval& new_interval) {
+		setInterval(new_interval);
+		updateLabels();
+	}
 
 protected:
 	void paintEvent(QPaintEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 
 private:
-	double x_min_value = 0.;
-	double x_max_value = 1000.;
-
-	double y_min_value = 0.;
-	double y_max_value = 1000.;
+	QtPlotType::QtPlotInterval interval;
 
 	int min_delta = 5;
 	int x_delta = 5;

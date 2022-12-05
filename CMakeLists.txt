@@ -14,6 +14,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(sources
 	src/qtplot.cpp
+	src/qtplot_abstract.cpp
 	src/qtplot_histogram.cpp
 	src/qtplot_waterfall.cpp
 	src/qtplot_axes.cpp
@@ -22,6 +23,7 @@ set(sources
 
 set(headers
 	include/qtplot.h
+	include/qtplot_abstract.h
 	include/qtplot_histogram.h
 	include/qtplot_waterfall.h
 	include/qtplot_axes.h

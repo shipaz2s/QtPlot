@@ -11,20 +11,22 @@ QtPlotWidget::QtPlotWidget(QWidget* parent) :
 	plot_start_point = axes->getPlotStartPoint();
 	plot_size = axes->getPlotSize();
 
-	QPalette pal = QPalette();
+	// QPalette pal = QPalette();
 
-	// set black background
-	// Qt::black / "#000000" / "black"
-	pal.setColor(QPalette::Window, Qt::black);
+	// // set black background
+	// // Qt::black / "#000000" / "black"
+	// pal.setColor(QPalette::Window, Qt::black);
 
-	plot->setAutoFillBackground(true); 
-	plot->setPalette(pal);
+	// plot->setAutoFillBackground(true); 
+	// plot->setPalette(pal);
 
-	plot->lower();
+	// plot->lower();
 	// plot->raise();
 
 	axes->setSegment(QtPlotType::Axis::X, 10, 50);
 	axes->setSegment(QtPlotType::Axis::Y, -20, 140);
+
+	connect(plot, &QtPlot::signalAxesHint, axes, &QtPlotAxes::slotSetInterval);
 }
 
 QSize QtPlotWidget::minimumSizeHint() const
