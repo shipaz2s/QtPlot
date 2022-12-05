@@ -34,6 +34,8 @@ public:
 	void addData(const double* y_value_ptr, size_t size);
 	void addData(const double* x_value_ptr, const double* y_value_ptr, size_t size);
 
+	QtPlotType::QtPlotInterval& getAxesInterval() {return axes_interval;};
+
 	size_t curveCount() {return data.size();};
 	void clear() {data.clear();};
 	void deleteCurve(int index);

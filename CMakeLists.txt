@@ -29,6 +29,7 @@ set(headers
 	include/qtplot_axes.h
 	include/qtplot_widget.h
 	include/qtplot_types.h
+	include/qtplot_zoomer.h
 )
 
 add_library(qtplot SHARED ${headers} ${sources})

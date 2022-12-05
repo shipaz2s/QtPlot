@@ -21,6 +21,8 @@ public:
 
 	void setSegment(QtPlotType::Axis axis, double min_value, double max_value);
 	void setInterval(const QtPlotType::QtPlotInterval& new_interval);
+	QtPlotType::QtPlotInterval& getInterval() {return interval;};
+
 	QPoint getPlotStartPoint() {return plot_start_point;};
 	QSize getPlotSize() {return plot_size;};
 	void updateLabels();
