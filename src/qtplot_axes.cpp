@@ -10,7 +10,7 @@
 QtPlotAxes::QtPlotAxes(QWidget* parent) :
 	QWidget(parent)
 {
-	setMinimumSize(300, 200);
+	setMinimumSize(320, 240);
 
 	text_brush.setColor(palette().color(QPalette::Text));
 	axis_brush.setColor(palette().color(QPalette::Text));

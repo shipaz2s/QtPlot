@@ -7,15 +7,7 @@
 
 #include <vector>
 
-namespace QtPlotType
-{
-	enum class Axis
-	{
-		X,
-		Y,
-		Z
-	};
-}
+#include <qtplot_types.h>
 
 class QtPlotAxes: public QWidget
 {

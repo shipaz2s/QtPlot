@@ -41,6 +41,9 @@ public:
 	void clear() {data.clear();};
 	void deleteCurve(int index);
 
+signals:
+	void signalAxisHint();
+
 protected:
 	void paintEvent(QPaintEvent* event) override;
 

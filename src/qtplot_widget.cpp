@@ -5,6 +5,7 @@
 QtPlotWidget::QtPlotWidget(QWidget* parent) :
 	QWidget(parent)
 {
+	setMinimumSize(320, 240);
 	axes = new QtPlotAxes(this);
 	plot = new QtPlot(this);
 	plot_start_point = axes->getPlotStartPoint();

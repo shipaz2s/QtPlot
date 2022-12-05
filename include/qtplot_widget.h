@@ -5,18 +5,9 @@
 #include <QPoint>
 
 
-#include "qtplot.h"
-#include "qtplot_axes.h"
-
-namespace QtPlotType
-{
-	enum class Plot
-	{
-		Plot,
-		WaterFall,
-		Histogram
-	};
-}
+#include <qtplot.h>
+#include <qtplot_axes.h>
+#include <qtplot_types.h>
 
 class QtPlotWidget : public QWidget
 {

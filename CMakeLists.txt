@@ -26,6 +26,7 @@ set(headers
 	include/qtplot_waterfall.h
 	include/qtplot_axes.h
 	include/qtplot_widget.h
+	include/qtplot_types.h
 )
 
 add_library(qtplot SHARED ${headers} ${sources})
