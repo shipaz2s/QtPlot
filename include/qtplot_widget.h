@@ -37,6 +37,11 @@ public:
 		zoom_intervals.clear();
 	};
 
+	void setZoomIn(bool value) {zooming_in = value;};
+	void setZoomOut(bool value) {zooming_out = value;};
+	void setPicking(bool value) {picking = value;};
+	void setMoving(bool value) {moving = value;};
+
 protected:
 	void paintEvent(QPaintEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
@@ -56,6 +61,10 @@ private:
 	QtPlotZoomer* zoomer;
 	QPoint zoomer_start_point;
 	bool zooming = false;
+	bool picking = false;
+	bool moving = false;
+	bool zooming_out = false;
+	bool zooming_in = false;
 
 	QtPlotType::QtPlotInterval axes_default_interval;
 	std::list<QtPlotType::QtPlotInterval> zoom_intervals;

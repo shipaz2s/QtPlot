@@ -33,12 +33,6 @@ QtPlotAxes::QtPlotAxes(QWidget* parent) :
 	x_lables.reserve(10);
 	y_lables.reserve(10);
 
-	// double x_min_value = 0.;
-	// double x_max_value = 1000.;
-
-	// double y_min_value = 0.;
-	// double y_max_value = 1000.;
-
 	interval[QtPlotType::Axis::X].from = 0.;
 	interval[QtPlotType::Axis::X].to = 1000.;
 	interval[QtPlotType::Axis::Y].from = 0.;

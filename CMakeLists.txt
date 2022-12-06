@@ -19,6 +19,7 @@ set(sources
 	src/qtplot_waterfall.cpp
 	src/qtplot_axes.cpp
 	src/qtplot_widget.cpp
+	src/qtplot_window.cpp
 )
 
 set(headers
@@ -30,6 +31,7 @@ set(headers
 	include/qtplot_widget.h
 	include/qtplot_types.h
 	include/qtplot_zoomer.h
+	include/qtplot_window.h
 )
 
 add_library(qtplot SHARED ${headers} ${sources})
@@ -48,3 +50,9 @@ target_link_libraries(test PRIVATE
 	Qt::OpenGLWidgets
 	qtplot
 )
+
+add_custom_command(
+	TARGET test POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_SOURCE_DIR}/resources ${CMAKE_BINARY_DIR}/resources
+	)

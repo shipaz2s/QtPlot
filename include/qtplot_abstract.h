@@ -21,7 +21,7 @@ public:
 		colors[2]  = Qt::darkGreen;
 		colors[3]  = Qt::darkYellow;
 		colors[4]  = Qt::darkCyan;
-		colors[5]  = Qt::darkGray;		
+		colors[5]  = Qt::darkGray;
 	};
 
 	bool isAutoPlot() {return auto_plot;};
