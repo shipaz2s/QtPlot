@@ -50,6 +50,8 @@ public:
 		emit signalAxesHint(axes_interval);
 	}
 
+	const QtPlotType::Curve_list* curves() const {return &data;};
+
 signals:
 	void signalAxesHint(const QtPlotType::QtPlotInterval&);
 

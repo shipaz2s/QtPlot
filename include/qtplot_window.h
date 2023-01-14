@@ -13,6 +13,8 @@ class QtPlotWindow : public QWidget
 public:
 	QtPlotWindow(QWidget* parent = nullptr);
 
+	QtPlotWidget* plotWidget() {return plot_wgt;};
+
 private slots:
 	void moveBntToggled(bool);
 	void cursorBntToggled(bool);

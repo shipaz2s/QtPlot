@@ -36,6 +36,28 @@ QSize QtPlotWidget::sizeHint() const
 	return QSize(640, 480);
 }
 
+void QtPlotWidget::slotDeleteMarker(QPointF& pnt)
+{
+	QtPlotMarker* finder = new QtPlotMarker(pnt, this);
+	
+	auto res = markers.find(finder);
+	delete finder;
+
+	if (res != markers.end()) {
+		(*res)->deleteLater();
+		markers.erase(res);
+	}
+}
+
+void QtPlotWidget::slotDeleteMarkers()
+{
+	for (auto& marker: markers) {
+		
+		marker->deleteLater();
+	}
+	markers.clear();
+}
+
 void QtPlotWidget::paintEvent(QPaintEvent* event)
 {
 }
@@ -52,6 +74,8 @@ void QtPlotWidget::resizeEvent(QResizeEvent* event)
 
 	plot->move(plot_start_point);
 	plot->resize(plot_size);
+
+	moveMarkers();
 }
 
 void QtPlotWidget::changeEvent(QEvent* event)
@@ -65,8 +89,7 @@ void QtPlotWidget::changeEvent(QEvent* event)
 void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 {
 	if (zooming_in) {
-		if (event->button() == Qt::LeftButton)
-		{
+		if (event->button() == Qt::LeftButton) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
 					if ( !zooming ) {
@@ -78,7 +101,94 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 				}
 			}
 		}
+	} else if (picking) {
+		if (event->button() == Qt::LeftButton) {
+			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
+				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
+					const QtPlotType::Curve_list* curves_ptr = plot->curves();
+					auto interval = plot->getAxesInterval();
+
+					qreal x_pnt = ( event->position().x() - plot_start_point.x() ) / plot_size.width();
+					qreal y_pnt = ( plot_start_point.y() + plot_size.height() - event->position().y() ) / plot_size.height();
+
+					x_pnt = interval[QtPlotType::Axis::X].from + (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) * x_pnt;
+					y_pnt = interval[QtPlotType::Axis::Y].from + (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) * y_pnt;
+
+					qreal distance;
+					qreal distance_x;
+					qreal distance_y;
+					qreal min_distance;
+
+					std::vector< std::pair<qreal, qreal> > nearest_points;
+					for (auto & curve: *curves_ptr) {
+						int pos = 0;
+						for (auto x_val : curve.x) {
+							if (x_val >= x_pnt) {
+								distance_x = (curve.x[pos] - x_pnt);
+								distance_y = (curve.y[pos] - y_pnt);
+								min_distance = distance_x * distance_x + distance_y * distance_y;
+								if (pos > 0) {
+									distance_x = (curve.x[pos - 1] - x_pnt);
+									distance_y = (curve.y[pos - 1] - y_pnt);
+									distance = distance_x * distance_x + distance_y * distance_y;
+									if (distance < min_distance) {
+										--pos;
+									}
+								}
+								break;
+							}
+							++pos;
+						}
+						nearest_points.push_back( std::make_pair(curve.x[pos], curve.y[pos]) );
+					}
+
+					if (nearest_points.size() == 0) {
+						return;
+					}
+					int nearest_pos = 0;
+					distance_x = (nearest_points[0].first - x_pnt);
+					distance_y = (nearest_points[0].second - y_pnt);
+					min_distance = distance_x * distance_x + distance_y * distance_y;
+					
+					for (int i = 1; i < nearest_points.size(); ++i) {
+						distance_x = (nearest_points[i].first - x_pnt); 
+						distance_y = (nearest_points[i].second - y_pnt);
+						distance = distance_x * distance_x + distance_y * distance_y;
+
+						if (distance < min_distance) {
+							min_distance = distance;
+							nearest_pos = i;
+						}
+					}
+
+					qreal x_plot_pnt = nearest_points[nearest_pos].first;
+					qreal y_plot_pnt = nearest_points[nearest_pos].second; 
+
+					new_marker = new QtPlotMarker(QPointF(x_plot_pnt, y_plot_pnt), this);
+					
+					new_marker->raise();
+					new_marker->show();
+					auto res = markers.find(new_marker);
+					if (res == markers.end()) {
+						markers.insert(new_marker);
+						new_marker->move(
+							(x_plot_pnt - interval[QtPlotType::Axis::X].from) \
+							/ (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) * plot_size.width() \
+							+ plot_start_point.x() - new_marker->width() / 2,
+							plot_start_point.y() + plot_size.height() - (y_plot_pnt - interval[QtPlotType::Axis::Y].from) \
+							/ (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) * plot_size.height() - new_marker->getDiameter()
+						);
+						connect(new_marker, &QtPlotMarker::signalDeleteMarker, this, &QtPlotWidget::slotDeleteMarker);
+						connect(new_marker, &QtPlotMarker::signalDeleteMarkers, this, &QtPlotWidget::slotDeleteMarkers);
+						
+					} else {
+						delete new_marker;
+					}
+				}
+			}
+		}
 	}
+
 }
 
 void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
@@ -159,6 +269,8 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 				plot->repaint();
 			}
 		}
+
+		moveMarkers();
 	}
 
 	if (zooming_in) {
@@ -204,5 +316,23 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 				plot->repaint();
 			}
 		}
+		moveMarkers();
+	}
+}
+
+void QtPlotWidget::moveMarkers()
+{
+	auto interval = plot->getAxesInterval();
+
+	for (auto & marker: markers) {
+		qreal x_point = marker->point().x();
+		qreal y_point = marker->point().y();
+
+		marker->move(
+			(x_point - interval[QtPlotType::Axis::X].from) / (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) \
+			* plot_size.width() + plot_start_point.x() - new_marker->width() / 2,
+			plot_start_point.y() + (interval[QtPlotType::Axis::Y].to - y_point) / (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) \
+			* plot_size.height() - new_marker->getDiameter()
+		);
 	}
 }

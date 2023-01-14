@@ -22,8 +22,6 @@ int main(int argc, char** argv)
 	std::vector<double> x_values_2 = {1, 3, 5, 7, 9, 11, 12, 13, 14, 15};
 	std::vector<double> y_values_2 = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 
-	// wgt.setData(x_values.data(), y_values.data(), x_values.size());
-	// wgt.addData(x_values_2.data(), y_values_2.data(), x_values_2.size());
 	// wgt.setInterval(
 	// 	QtPlotType::QtPlotInterval(
 	// 		QtPlotType::QtPlotAxisInterval(0., 15.),
@@ -38,6 +36,13 @@ int main(int argc, char** argv)
 	// axes.show();
 
 	QtPlotWindow win;
+
+	QtPlotWidget* wgt;
+	wgt = win.plotWidget();
+
+	wgt->setData(x_values.data(), y_values.data(), x_values.size());
+	wgt->addData(x_values_2.data(), y_values_2.data(), x_values_2.size());
+
 	win.show();
 
 	return app.exec();

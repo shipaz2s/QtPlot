@@ -139,11 +139,10 @@ namespace QtPlotType
 	};
 
 	struct Curve {
-		std::vector<double> x;
-		std::vector<double> y;
+		std::vector<qreal> x;
+		std::vector<qreal> y;
 	};
 	typedef std::list<Curve> Curve_list;
-	
 }
 
 
