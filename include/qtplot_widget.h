@@ -61,6 +61,8 @@ public:
 	void setPicking(bool value) {picking = value;};
 	void setMoving(bool value) {moving = value;};
 
+	QtPlot* getPlot() {return plot;};
+
 public slots:
 	void slotDeleteMarker(QPointF&);
 	void slotDeleteMarkers();
@@ -86,10 +88,13 @@ private:
 	QtPlotZoomer* zoomer;
 	QPoint zoomer_start_point;
 	QtPlotMarker* new_marker;
+	QPoint move_start_point;
 
 	std::set<QtPlotMarker*, QtPlotMarkerComparator> markers;
 
 	bool zooming = false;
+	bool moving_started = false;
+
 	bool picking = false;
 	bool moving = false;
 	bool zooming_out = false;

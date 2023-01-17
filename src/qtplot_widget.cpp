@@ -187,6 +187,18 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 				}
 			}
 		}
+	} else if (moving) {
+		if (event->button() == Qt::LeftButton) {
+			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
+				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
+					if ( !zooming ) {
+						move_start_point = QPoint(event->position().x(), event->position().y());
+						moving_started = true;
+						plot->setCursor(Qt::ClosedHandCursor);
+					}
+				}
+			}
+		}
 	}
 
 }
@@ -250,6 +262,27 @@ void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
 
 			zoomer->resize( QSize( new_width, new_height ) );
 		}
+	} else if (moving_started) {
+		auto interval = plot->getAxesInterval();
+		qreal delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / plot_size.width();
+		qreal delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / plot_size.height();
+
+		qreal pix_delta_x = event->position().x() - move_start_point.x();
+		qreal pix_delta_y = event->position().y() - move_start_point.y();
+
+		QtPlotType::QtPlotInterval new_interval(interval);
+		new_interval[QtPlotType::Axis::X].from = interval[QtPlotType::Axis::X].from - pix_delta_x * delta_x;
+		new_interval[QtPlotType::Axis::X].to = interval[QtPlotType::Axis::X].to - pix_delta_x * delta_x;
+		new_interval[QtPlotType::Axis::Y].from = interval[QtPlotType::Axis::Y].from + pix_delta_y * delta_y;
+		new_interval[QtPlotType::Axis::Y].to = interval[QtPlotType::Axis::Y].to + pix_delta_y * delta_y;
+
+		plot->setInterval(new_interval);
+		axes->setInterval(new_interval);
+		plot->repaint();
+		axes->repaint();
+		moveMarkers();
+
+		move_start_point = QPoint( event->position().toPoint() );
 	}
 }
 
@@ -271,9 +304,7 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 		}
 
 		moveMarkers();
-	}
-
-	if (zooming_in) {
+	} else if (zooming_in) {
 		if (event->button() == Qt::LeftButton) {
 			if (zooming) {
 				zooming = false;
@@ -317,6 +348,11 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 			}
 		}
 		moveMarkers();
+	} else if (moving) {
+		if (event->button() == Qt::LeftButton) {
+			plot->setCursor( QCursor( QPixmap("resources/move.png") ) );
+			moving_started = false;
+		}
 	}
 }
 
@@ -328,11 +364,23 @@ void QtPlotWidget::moveMarkers()
 		qreal x_point = marker->point().x();
 		qreal y_point = marker->point().y();
 
-		marker->move(
-			(x_point - interval[QtPlotType::Axis::X].from) / (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) \
-			* plot_size.width() + plot_start_point.x() - new_marker->width() / 2,
-			plot_start_point.y() + (interval[QtPlotType::Axis::Y].to - y_point) / (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) \
-			* plot_size.height() - new_marker->getDiameter()
-		);
+		qreal new_x_point = (x_point - interval[QtPlotType::Axis::X].from) / \
+			(interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) \
+			* plot_size.width() + plot_start_point.x() - new_marker->width() / 2;
+		qreal new_y_point = plot_start_point.y() + (interval[QtPlotType::Axis::Y].to - y_point) / \
+			(interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) \
+			* plot_size.height() - new_marker->getDiameter();
+
+		marker->move(new_x_point, new_y_point);
+
+		if (new_x_point + new_marker->width() / 2 >= plot_start_point.x() &&
+			new_x_point + new_marker->width() / 2 <= plot_start_point.x() + plot_size.width() &&
+			new_y_point + new_marker->getDiameter() >= plot_start_point.y() &&
+			new_y_point + new_marker->getDiameter() <= plot_start_point.y() + plot_size.height() )
+		{
+			marker->show();		
+		} else {
+			marker->hide();
+		}
 	}
 }

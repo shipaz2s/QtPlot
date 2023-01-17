@@ -61,6 +61,12 @@ QtPlotWindow::QtPlotWindow(QWidget* parent) :
 
 void QtPlotWindow::moveBntToggled(bool checked)
 {
+	if (move_btn->isChecked()) {
+		plot_wgt->getPlot()->setCursor( QCursor( QPixmap("resources/move.png") ) );
+	} else {
+		plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
+	}
+
 	uncheckModeButtons();
 
 	move_btn->setChecked(checked);
@@ -72,10 +78,18 @@ void QtPlotWindow::cursorBntToggled(bool checked)
 	uncheckModeButtons();
 
 	cursor_btn->setChecked(checked);
+
+	plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
 }
 
 void QtPlotWindow::pickBntToggled(bool checked)
 {	
+	if (pick_btn->isChecked()) {
+		plot_wgt->getPlot()->setCursor(Qt::CrossCursor);
+	} else {
+		plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
+	}
+
 	uncheckModeButtons();
 
 	pick_btn->setChecked(checked);
@@ -84,6 +98,12 @@ void QtPlotWindow::pickBntToggled(bool checked)
 
 void QtPlotWindow::zoomInBntToggled(bool checked)
 {
+	if (zoom_in_btn->isChecked()) {
+		plot_wgt->getPlot()->setCursor( QCursor( QPixmap("resources/zoom_in.png") ) );
+	} else {
+		plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
+	}
+
 	uncheckModeButtons();
 
 	zoom_in_btn->setChecked(checked);
@@ -92,6 +112,12 @@ void QtPlotWindow::zoomInBntToggled(bool checked)
 
 void QtPlotWindow::zoomOutBntToggled(bool checked)
 {
+	if (zoom_out_btn->isChecked()) {
+		plot_wgt->getPlot()->setCursor( QCursor( QPixmap("resources/zoom_out.png") ) );
+	} else {
+		plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
+	}
+
 	uncheckModeButtons();
 
 	zoom_out_btn->setChecked(checked);
