@@ -61,11 +61,14 @@ protected:
 
 		painter.drawEllipse(QPoint(width() / 2, diameter), diameter / 2, diameter / 2);
 
-		painter.setBrush( QBrush( QColor(255,255,255, 180) ) );
+		auto bg_color = palette().color(backgroundRole());
+		auto fg_color = palette().color(foregroundRole());
+		bg_color.setAlpha(180);
+		painter.setBrush( QBrush( bg_color ) );
 		painter.setPen( QPen( QBrush( QColor(0,0,0, 0) ), line_width )  );
 
-		painter.drawRect(0, diameter + 5 + line_width * 2, label_width, label_heigth);
-		painter.setPen( QPen( QBrush(Qt::black), line_width ) );
+		painter.drawRect(0, diameter + 10 + line_width * 2, label_width, label_heigth);
+		painter.setPen( QPen( fg_color, line_width ) );
 		painter.drawText(0, diameter + line_width * 2 + 5 + label_heigth, label_text);
 
 		painter.end();

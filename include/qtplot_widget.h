@@ -18,6 +18,17 @@ class QtPlotWidget : public QWidget
 	Q_OBJECT
 
 public:
+	enum class Status {
+		watching,
+		pointing,
+		markering,
+		moving,
+		zooming_in,
+		zooming_out
+	};
+
+public:
+	QtPlotWidget(QtPlotType::Plot type = QtPlotType::Plot::Plot, QWidget* parent = nullptr);
 	QtPlotWidget(QWidget* parent = nullptr);
 
 	QSize minimumSizeHint() const override;
@@ -56,12 +67,21 @@ public:
 		zoom_intervals.clear();
 	};
 
-	void setZoomIn(bool value) {zooming_in = value;};
-	void setZoomOut(bool value) {zooming_out = value;};
-	void setPicking(bool value) {picking = value;};
-	void setMoving(bool value) {moving = value;};
+	void setStatus(Status value) {
+		status = value;
 
-	QtPlot* getPlot() {return plot;};
+		if (status == Status::pointing) {
+			this->setMouseTracking(true);
+			plot->setMouseTracking(true);
+			axes->setMouseTracking(true);
+		} else {
+			plot->setMouseTracking(true);
+			this->setMouseTracking(false);
+			axes->setMouseTracking(false);
+		}
+	}
+
+	QtPlotAbstract* getPlot() {return plot;};
 
 public slots:
 	void slotDeleteMarker(QPointF&);
@@ -79,7 +99,7 @@ protected:
 private:
 	void moveMarkers();
 
-	QtPlot* plot;
+	QtPlotAbstract* plot;
 	QtPlotAxes* axes;
 
 	QPoint plot_start_point;
@@ -91,14 +111,20 @@ private:
 	QPoint move_start_point;
 
 	std::set<QtPlotMarker*, QtPlotMarkerComparator> markers;
+	QLabel* pointing_lbl;
 
 	bool zooming = false;
 	bool moving_started = false;
 
-	bool picking = false;
-	bool moving = false;
-	bool zooming_out = false;
-	bool zooming_in = false;
+	Status status = Status::watching;
+	/*
+	0 - default (watching)
+	1 - pointing
+	2 - setting markers
+	3 - moving
+	4 - zooming in
+	5 - zooming out
+	*/
 
 	QtPlotType::QtPlotInterval axes_default_interval;
 	std::list<QtPlotType::QtPlotInterval> zoom_intervals;

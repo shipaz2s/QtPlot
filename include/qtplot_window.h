@@ -11,7 +11,7 @@ class QtPlotWindow : public QWidget
 	Q_OBJECT
 
 public:
-	QtPlotWindow(QWidget* parent = nullptr);
+	QtPlotWindow(QWidget* parent = nullptr, QtPlotType::Plot plt_type = QtPlotType::Plot::Plot);
 
 	QtPlotWidget* plotWidget() {return plot_wgt;};
 
@@ -26,12 +26,10 @@ private:
 	void uncheckModeButtons() {
 		for (auto& btn: mode_btns) {
 			btn->setChecked(false);
-
-			plot_wgt->setZoomIn(false);
-			plot_wgt->setZoomOut(false);
-			plot_wgt->setPicking(false);
-			plot_wgt->setMoving(false);
+			btn->setMouseTracking(false);
 		}
+		this->setMouseTracking(false);
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
 	}
 
 private:

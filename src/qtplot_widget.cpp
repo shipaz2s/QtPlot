@@ -2,13 +2,27 @@
 
 #include <QEvent>
 #include <QMouseEvent>
+#include <qtplot_histogram.h>
 
-QtPlotWidget::QtPlotWidget(QWidget* parent) :
+QtPlotWidget::QtPlotWidget(QtPlotType::Plot plot_type, QWidget* parent) :
 	QWidget(parent)
 {
 	setMinimumSize(320, 240);
 	axes = new QtPlotAxes(this);
-	plot = new QtPlot(this);
+	switch (plot_type)
+	{
+	case QtPlotType::Plot::Plot:
+		plot = new QtPlot(this);
+		break;
+
+	case QtPlotType::Plot::Histogram:
+		plot = new QtPlotHistogram(this);
+		break;
+	
+	default:
+		plot = new QtPlot(this);
+		break;
+	}
 	plot_start_point = axes->getPlotStartPoint();
 	plot_size = axes->getPlotSize();
 
@@ -24,6 +38,15 @@ QtPlotWidget::QtPlotWidget(QWidget* parent) :
 	def_interval[QtPlotType::Axis::Y].to = 1000.;
 
 	setInterval(def_interval);
+
+	pointing_lbl = new QLabel(this);
+	pointing_lbl->hide();
+	pointing_lbl->setAutoFillBackground(true);
+}
+
+QtPlotWidget::QtPlotWidget(QWidget* parent)
+{
+	QtPlotWidget(QtPlotType::Plot::Plot, parent);
 }
 
 QSize QtPlotWidget::minimumSizeHint() const
@@ -88,7 +111,9 @@ void QtPlotWidget::changeEvent(QEvent* event)
 
 void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 {
-	if (zooming_in) {
+	switch (status)
+	{
+	case Status::zooming_in:
 		if (event->button() == Qt::LeftButton) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
@@ -101,7 +126,9 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 				}
 			}
 		}
-	} else if (picking) {
+		break;
+
+	case Status::markering:
 		if (event->button() == Qt::LeftButton) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
@@ -187,7 +214,9 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 				}
 			}
 		}
-	} else if (moving) {
+		break;
+
+	case Status::moving:
 		if (event->button() == Qt::LeftButton) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
@@ -199,13 +228,18 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 				}
 			}
 		}
+		break;
+	
+	default:
+		break;
 	}
-
 }
 
 void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (zooming_in) {
+	switch (status)
+	{
+	case Status::zooming_in:
 		if (zooming) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
@@ -262,33 +296,67 @@ void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
 
 			zoomer->resize( QSize( new_width, new_height ) );
 		}
-	} else if (moving_started) {
-		auto interval = plot->getAxesInterval();
-		qreal delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / plot_size.width();
-		qreal delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / plot_size.height();
+		break;
+	
+	case Status::moving:
+		if (moving_started) {
+			auto interval = plot->getAxesInterval();
+			qreal delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / plot_size.width();
+			qreal delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / plot_size.height();
 
-		qreal pix_delta_x = event->position().x() - move_start_point.x();
-		qreal pix_delta_y = event->position().y() - move_start_point.y();
+			qreal pix_delta_x = event->position().x() - move_start_point.x();
+			qreal pix_delta_y = event->position().y() - move_start_point.y();
 
-		QtPlotType::QtPlotInterval new_interval(interval);
-		new_interval[QtPlotType::Axis::X].from = interval[QtPlotType::Axis::X].from - pix_delta_x * delta_x;
-		new_interval[QtPlotType::Axis::X].to = interval[QtPlotType::Axis::X].to - pix_delta_x * delta_x;
-		new_interval[QtPlotType::Axis::Y].from = interval[QtPlotType::Axis::Y].from + pix_delta_y * delta_y;
-		new_interval[QtPlotType::Axis::Y].to = interval[QtPlotType::Axis::Y].to + pix_delta_y * delta_y;
+			QtPlotType::QtPlotInterval new_interval(interval);
+			new_interval[QtPlotType::Axis::X].from = interval[QtPlotType::Axis::X].from - pix_delta_x * delta_x;
+			new_interval[QtPlotType::Axis::X].to = interval[QtPlotType::Axis::X].to - pix_delta_x * delta_x;
+			new_interval[QtPlotType::Axis::Y].from = interval[QtPlotType::Axis::Y].from + pix_delta_y * delta_y;
+			new_interval[QtPlotType::Axis::Y].to = interval[QtPlotType::Axis::Y].to + pix_delta_y * delta_y;
 
-		plot->setInterval(new_interval);
-		axes->setInterval(new_interval);
-		plot->repaint();
-		axes->repaint();
-		moveMarkers();
+			plot->setInterval(new_interval);
+			axes->setInterval(new_interval);
+			plot->repaint();
+			axes->repaint();
+			moveMarkers();
 
-		move_start_point = QPoint( event->position().toPoint() );
+			move_start_point = QPoint( event->position().toPoint() );
+		}
+		break;
+	
+	case Status::pointing:
+		pointing_lbl->move( event->position().toPoint().x() + 16,
+							event->position().toPoint().y() + 16 );
+		if ( 	event->position().x() >= plot_start_point.x() &&
+				event->position().x() <= plot_start_point.x() + plot_size.width() && 
+				event->position().y() >= plot_start_point.y() && 
+				event->position().y() <= plot_start_point.y() + plot_size.height() )
+		{
+			auto interval = plot->getAxesInterval();			
+			qreal x_pnt = ( event->position().x() - plot_start_point.x() ) / plot_size.width();
+			qreal y_pnt = ( plot_start_point.y() + plot_size.height() - event->position().y() ) / plot_size.height();
+			x_pnt = interval[QtPlotType::Axis::X].from + (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) * x_pnt;
+			y_pnt = interval[QtPlotType::Axis::Y].from + (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) * y_pnt;
+			pointing_lbl->setText(locale().toString(x_pnt, 'g') + " "
+				+ locale().toString(y_pnt, 'g'));
+			pointing_lbl->adjustSize();
+			
+			pointing_lbl->show();
+		} else {
+			pointing_lbl->hide();
+		}
+
+		break;
+
+	default:
+		break;
 	}
 }
 
 void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-	if (zooming_out) {
+	switch (status)
+	{
+	case Status::zooming_out:
 		if (event->button() == Qt::RightButton) {
 			plot->setInterval(axes_default_interval);
 			zoom_intervals.clear();
@@ -304,7 +372,9 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 		}
 
 		moveMarkers();
-	} else if (zooming_in) {
+		break;
+
+	case Status::zooming_in:
 		if (event->button() == Qt::LeftButton) {
 			if (zooming) {
 				zooming = false;
@@ -348,11 +418,15 @@ void QtPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 			}
 		}
 		moveMarkers();
-	} else if (moving) {
+	
+	case Status::moving:
 		if (event->button() == Qt::LeftButton) {
 			plot->setCursor( QCursor( QPixmap("resources/move.png") ) );
 			moving_started = false;
 		}
+
+	default:
+		break;
 	}
 }
 

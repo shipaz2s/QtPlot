@@ -27,12 +27,12 @@ public:
 	bool isAutoPlot() {return auto_plot;};
 	void setAutoPlot(bool value) {auto_plot = value;};
 
-	void setData(const double* y_value_ptr, size_t size);
-	void setData(const double* x_value_ptr, const double* y_value_ptr, size_t size);
-	void setData(QtPlotType::Curve_list& value, size_t size);
+	virtual void setData(const double* y_value_ptr, size_t size);
+	virtual void setData(const double* x_value_ptr, const double* y_value_ptr, size_t size) {};
+	virtual void setData(QtPlotType::Curve_list& value, size_t size) {};
 
-	void addData(const double* y_value_ptr, size_t size);
-	void addData(const double* x_value_ptr, const double* y_value_ptr, size_t size);
+	virtual void addData(const double* y_value_ptr, size_t size);
+	virtual void addData(const double* x_value_ptr, const double* y_value_ptr, size_t size) {};
 
 	QtPlotType::QtPlotInterval& getAxesInterval() {return axes_interval;};
 

@@ -1,5 +1,70 @@
 #include <qtplot.h>
 #include <QPainter>
+#include <vector>
+#include <list>
+
+typedef std::vector<double> double_vector;
+
+void QtPlot::setData(const double* x_value_ptr, const double* y_value_ptr, size_t size)
+{
+	data.clear();
+	plot_interval.setInterval(QtPlotType::Axis::X, *x_value_ptr, *x_value_ptr);
+	plot_interval.setInterval(QtPlotType::Axis::Y, *y_value_ptr, *y_value_ptr);
+
+	addData(x_value_ptr, y_value_ptr, size);
+}
+
+void QtPlot::setData(QtPlotType::Curve_list& value, size_t size)
+{
+	plot_interval.setInterval(QtPlotType::Axis::X, value.front().x.front(), value.front().x.front());
+	plot_interval.setInterval(QtPlotType::Axis::Y, value.front().y.front(), value.front().y.front());
+	data = value;
+	find_interval();
+
+	emit signalAxesHint(axes_interval);
+
+	if (auto_plot) {
+		repaint();
+	}
+}
+
+void QtPlot::addData(const double* x_value_ptr, const double* y_value_ptr, size_t size)
+{
+	double_vector x_values;
+	double_vector y_values;
+
+	
+	x_values.assign(x_value_ptr, x_value_ptr + size);
+	y_values.assign(y_value_ptr, y_value_ptr + size);
+
+	if (plot_interval[QtPlotType::Axis::X].from > x_values.front() ) {
+		plot_interval[QtPlotType::Axis::X].from = x_values.front();
+	}
+
+	if (plot_interval[QtPlotType::Axis::X].to < x_values.back() ) {
+		plot_interval[QtPlotType::Axis::X].to = x_values.back();
+	}
+
+	if (plot_interval[QtPlotType::Axis::Y].from > y_values.front() ) {
+		plot_interval[QtPlotType::Axis::Y].from = y_values.front();
+	}
+
+	if (plot_interval[QtPlotType::Axis::Y].to < y_values.back() ) {
+		plot_interval[QtPlotType::Axis::Y].to = y_values.back();
+	}
+
+	QtPlotType::Curve new_curve;
+	new_curve.x = std::move(x_values);
+	new_curve.y = std::move(y_values);
+	data.push_back(std::move(new_curve));
+
+	axes_interval = plot_interval;
+	emit signalAxesHint(axes_interval);
+
+	if (auto_plot) {
+		repaint();
+	}
+}
 
 void QtPlot::paintEvent(QPaintEvent* event)
 {

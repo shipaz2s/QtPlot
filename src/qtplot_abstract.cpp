@@ -13,29 +13,6 @@ void QtPlotAbstract::setData(const double* y_value_ptr, size_t size)
 	addData(y_value_ptr, size);
 }
 
-void QtPlotAbstract::setData(const double* x_value_ptr, const double* y_value_ptr, size_t size)
-{
-	data.clear();
-	plot_interval.setInterval(QtPlotType::Axis::X, *x_value_ptr, *x_value_ptr);
-	plot_interval.setInterval(QtPlotType::Axis::Y, *y_value_ptr, *y_value_ptr);
-
-	addData(x_value_ptr, y_value_ptr, size);
-}
-
-void QtPlotAbstract::setData(QtPlotType::Curve_list& value, size_t size)
-{
-	plot_interval.setInterval(QtPlotType::Axis::X, value.front().x.front(), value.front().x.front());
-	plot_interval.setInterval(QtPlotType::Axis::Y, value.front().y.front(), value.front().y.front());
-	data = value;
-	find_interval();
-
-	emit signalAxesHint(axes_interval);
-
-	if (auto_plot) {
-		repaint();
-	}
-}
-
 void QtPlotAbstract::addData(const double* y_value_ptr, size_t size)
 {
 	double_vector x_values;
@@ -45,7 +22,10 @@ void QtPlotAbstract::addData(const double* y_value_ptr, size_t size)
 	for(int i = 0; i < size; ++i) {
 		x_values[i] = i;
 	}
+	y_values.resize(size);
 	y_values.assign(y_value_ptr, y_value_ptr + size);
+
+	const auto [min, max] = std::minmax_element(y_values.begin(), y_values.end());
 
 	if (plot_interval[QtPlotType::Axis::X].from > x_values.front() ) {
 		plot_interval[QtPlotType::Axis::X].from = x_values.front();
@@ -55,50 +35,12 @@ void QtPlotAbstract::addData(const double* y_value_ptr, size_t size)
 		plot_interval[QtPlotType::Axis::X].to = x_values.back();
 	}
 
-	if (plot_interval[QtPlotType::Axis::Y].from > y_values.front() ) {
-		plot_interval[QtPlotType::Axis::Y].from = y_values.front();
+	if (plot_interval[QtPlotType::Axis::Y].from > *min) {
+		plot_interval[QtPlotType::Axis::Y].from = *min;
 	}
 
-	if (plot_interval[QtPlotType::Axis::Y].to < y_values.back() ) {
-		plot_interval[QtPlotType::Axis::Y].to = y_values.back();
-	}
-
-	QtPlotType::Curve new_curve;
-	new_curve.x = std::move(x_values);
-	new_curve.y = std::move(y_values);
-	data.push_back(std::move(new_curve));
-
-	axes_interval = plot_interval;
-	emit signalAxesHint(axes_interval);
-
-	if (auto_plot) {
-		repaint();
-	}
-}
-
-void QtPlotAbstract::addData(const double* x_value_ptr, const double* y_value_ptr, size_t size)
-{
-	double_vector x_values;
-	double_vector y_values;
-
-	
-	x_values.assign(x_value_ptr, x_value_ptr + size);
-	y_values.assign(y_value_ptr, y_value_ptr + size);
-
-	if (plot_interval[QtPlotType::Axis::X].from > x_values.front() ) {
-		plot_interval[QtPlotType::Axis::X].from = x_values.front();
-	}
-
-	if (plot_interval[QtPlotType::Axis::X].to < x_values.back() ) {
-		plot_interval[QtPlotType::Axis::X].to = x_values.back();
-	}
-
-	if (plot_interval[QtPlotType::Axis::Y].from > y_values.front() ) {
-		plot_interval[QtPlotType::Axis::Y].from = y_values.front();
-	}
-
-	if (plot_interval[QtPlotType::Axis::Y].to < y_values.back() ) {
-		plot_interval[QtPlotType::Axis::Y].to = y_values.back();
+	if (plot_interval[QtPlotType::Axis::Y].to < *max) {
+		plot_interval[QtPlotType::Axis::Y].to = *max;
 	}
 
 	QtPlotType::Curve new_curve;

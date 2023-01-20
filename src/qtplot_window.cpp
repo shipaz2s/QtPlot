@@ -6,7 +6,7 @@
 #include <QIcon>
 #include <QSpacerItem>
 
-QtPlotWindow::QtPlotWindow(QWidget* parent) :
+QtPlotWindow::QtPlotWindow(QWidget* parent, QtPlotType::Plot plt_type) :
 	QWidget(parent)
 {
 	setLayout(new QVBoxLayout);
@@ -37,7 +37,7 @@ QtPlotWindow::QtPlotWindow(QWidget* parent) :
 	mode_btns.push_back(zoom_in_btn);
 	mode_btns.push_back(zoom_out_btn);
 
-	plot_wgt = new QtPlotWidget(this);
+	plot_wgt = new QtPlotWidget(plt_type, this);
 
 	QHBoxLayout* btns_layout = new QHBoxLayout;
 	QSpacerItem* btns_spacer = new QSpacerItem(5, 5, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -70,7 +70,11 @@ void QtPlotWindow::moveBntToggled(bool checked)
 	uncheckModeButtons();
 
 	move_btn->setChecked(checked);
-	plot_wgt->setMoving(checked);
+	if (checked) {
+		plot_wgt->setStatus(QtPlotWidget::Status::moving);
+	} else {
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
+	}
 }
 
 void QtPlotWindow::cursorBntToggled(bool checked)
@@ -80,6 +84,16 @@ void QtPlotWindow::cursorBntToggled(bool checked)
 	cursor_btn->setChecked(checked);
 
 	plot_wgt->getPlot()->setCursor(Qt::ArrowCursor);
+	if (checked) {
+		plot_wgt->setStatus(QtPlotWidget::Status::pointing);
+
+		this->setMouseTracking(true);
+		for (auto& btn: mode_btns) {
+			btn->setMouseTracking(true);
+		}
+	} else {
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
+	}
 }
 
 void QtPlotWindow::pickBntToggled(bool checked)
@@ -93,7 +107,11 @@ void QtPlotWindow::pickBntToggled(bool checked)
 	uncheckModeButtons();
 
 	pick_btn->setChecked(checked);
-	plot_wgt->setPicking(checked);
+	if (checked) {
+		plot_wgt->setStatus(QtPlotWidget::Status::markering);
+	} else {
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
+	}
 }
 
 void QtPlotWindow::zoomInBntToggled(bool checked)
@@ -107,7 +125,11 @@ void QtPlotWindow::zoomInBntToggled(bool checked)
 	uncheckModeButtons();
 
 	zoom_in_btn->setChecked(checked);
-	plot_wgt->setZoomIn(checked);
+	if (checked) {
+		plot_wgt->setStatus(QtPlotWidget::Status::zooming_in);
+	} else {
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
+	}
 }
 
 void QtPlotWindow::zoomOutBntToggled(bool checked)
@@ -121,5 +143,9 @@ void QtPlotWindow::zoomOutBntToggled(bool checked)
 	uncheckModeButtons();
 
 	zoom_out_btn->setChecked(checked);
-	plot_wgt->setZoomOut(checked);
+	if (checked) {
+		plot_wgt->setStatus(QtPlotWidget::Status::zooming_out);
+	} else {
+		plot_wgt->setStatus(QtPlotWidget::Status::watching);
+	}
 }

@@ -82,6 +82,13 @@ void QtPlotAxes::setSegment(QtPlotType::Axis axis, double min_value, double max_
 	switch (axis)
 	{
 	case QtPlotType::Axis::X :
+		if (x_lables.size() != 11) {
+			for (auto & lbl: x_lables) {
+				lbl->deleteLater();
+			}
+			x_lables.resize(11);
+		}
+
 		for (int i = 0; i < 11; ++i) {
 			x_lables[i]->setText( locale().toString(interval[axis].from + delta * i, 'g') );
 			x_lables[i]->adjustSize();
@@ -117,6 +124,13 @@ void QtPlotAxes::setInterval(const QtPlotType::QtPlotInterval& new_interval)
 	double delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / 10;
 	double delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / 10;
 
+	if (x_lables.size() != 11) {
+		for (auto & lbl: x_lables) {
+			lbl->deleteLater();
+		}
+		x_lables.resize(11, new QLabel(this));
+	}
+
 	for (int i = 0; i < 11; ++i) {
 		x_lables[i]->setText( locale().toString(interval[QtPlotType::Axis::X].from + delta_x * i, 'g') );
 		x_lables[i]->adjustSize();
@@ -143,6 +157,13 @@ void QtPlotAxes::paintEvent(QPaintEvent* event)
 
 	int y_start = height - label_heigth - vertical_intend - hatch_length;
 	int y_end = label_heigth + vertical_intend;
+
+
+	if (custom_axis) {
+		x_delta = (this->width() - 2 * horizontal_intend - label_width - hatch_length - xLabel_width) / ( custom_lables.size() + 1 );
+	} else {
+		x_delta = (this->width() - 2 * horizontal_intend - label_width - hatch_length - xLabel_width) / 10;
+	}
 
 	if (x_delta >= min_delta) {
 		int i;
@@ -188,7 +209,12 @@ void QtPlotAxes::updateLabels()
 	int x_start = label_width + horizontal_intend + hatch_length;
 	int y_start = height - label_heigth - vertical_intend - hatch_length - label_heigth / 2;
 
-	x_delta = (width - 2 * horizontal_intend - label_width - hatch_length - xLabel_width)/ 10;
+
+	if (custom_axis) {
+		x_delta = (this->width() - 2 * horizontal_intend - label_width - hatch_length - xLabel_width) / ( custom_lables.size() + 1 );
+	} else {
+		x_delta = (this->width() - 2 * horizontal_intend - label_width - hatch_length - xLabel_width) / 10;
+	}
 	y_delta = (height - 2 * vertical_intend  - label_heigth - hatch_length - label_heigth) / 10;
 
 	xAxis_label->move(width - xLabel_width, y_start);
@@ -203,18 +229,38 @@ void QtPlotAxes::updateLabels()
 	int y_add_length = 0;
 	int last_y_pos = INT_MAX;
 	int y_pos;
-	for (int i = 0; i < 11; ++i) {
-		x_add_length = fm_ptr->horizontalAdvance(x_lables[i]->text()) / 2;
-		x_pos = x_start + i * x_delta - x_add_length;
-		x_lables[i]->move(x_pos, height - label_heigth);
 
-		if (last_x_pos + horizontal_intend >=  x_pos) {
-			x_lables[i]->setVisible(false);
-		} else {
-			x_lables[i]->setVisible(true);
-			last_x_pos = x_start + i * x_delta + x_add_length;
+	if (custom_axis) {
+		auto x_iter = x_lables.begin();
+		for (int i = 0; i < custom_lables.size(); ++i) {
+			x_add_length = fm_ptr->horizontalAdvance((*x_iter)->text()) / 2;
+			x_pos = x_start + (i + 1) * x_delta - x_add_length;
+			(*x_iter)->move(x_pos, height - label_heigth);
+
+			if (last_x_pos + horizontal_intend >=  x_pos) {
+				(*x_iter)->setVisible(false);
+			} else {
+				(*x_iter)->setVisible(true);
+				last_x_pos = x_start + (i + 1) * x_delta + x_add_length;
+			}
+			++x_iter;
 		}
+	} else {
+		for (int i = 0; i < 11; ++i) {
+			x_add_length = fm_ptr->horizontalAdvance(x_lables[i]->text()) / 2;
+			x_pos = x_start + i * x_delta - x_add_length;
+			x_lables[i]->move(x_pos, height - label_heigth);
 
+			if (last_x_pos + horizontal_intend >=  x_pos) {
+				x_lables[i]->setVisible(false);
+			} else {
+				x_lables[i]->setVisible(true);
+				last_x_pos = x_start + i * x_delta + x_add_length;
+			}
+		}
+	}
+
+	for (int i = 0; i < 11; ++i) {
 		y_add_length = fm_ptr->horizontalAdvance(y_lables[i]->text());
 		y_pos = y_start - i * y_delta;
 		y_lables[i]->move(label_width - y_add_length, y_pos);
@@ -228,5 +274,91 @@ void QtPlotAxes::updateLabels()
 	}
 
 	plot_start_point = QPoint(x_start, height - label_heigth - vertical_intend - hatch_length - 10 * y_delta);
-	plot_size = QSize(10 * x_delta, 10 * y_delta);
+
+	if (custom_axis) {
+		plot_size = QSize( (custom_lables.size() + 1) * x_delta, 10 * y_delta);
+	} else {
+		plot_size = QSize(10 * x_delta, 10 * y_delta);
+	}
+}
+
+void QtPlotAxes::setCustomAxis(bool value)
+{
+	custom_axis = value;
+}
+
+
+void QtPlotAxes::setXLabels(const QStringList& x_list)
+{
+	default_custom_lables = x_list;
+	custom_lables = default_custom_lables;
+}
+
+void QtPlotAxes::zoom(zoomMode mode)
+{
+
+	if (!custom_axis) {
+		return;
+	}
+
+	switch (mode)
+	{
+	case zoomMode::reset:
+
+		custom_lables = default_custom_lables;
+		for (auto & lbl: x_lables) {
+			lbl->deleteLater();
+		}
+		x_lables.resize(custom_lables.size(), new QLabel(this));
+
+		for (int i = 0; i < custom_lables.size(); ++i) {
+			x_lables[i]->setText( custom_lables[i] );
+			x_lables[i]->adjustSize();
+		}
+		break;
+	
+	case zoomMode::in:
+		
+		if (custom_lables.size() > 1) {
+			custom_lables.pop_back();
+			x_lables.back()->deleteLater();
+			x_lables.pop_back();
+		}
+		break;
+
+	case zoomMode::out:
+
+		if (custom_lables.size() < default_custom_lables.size()) {
+			if (start_lbl_index + custom_lables.size() < default_custom_lables.size()) {
+				custom_lables.push_back(default_custom_lables[start_lbl_index + custom_lables.size()]);
+				x_lables.push_back(new QLabel(custom_lables.back(), this));
+			} else {
+				custom_lables.push_front(default_custom_lables[start_lbl_index - 1]);
+				x_lables.push_front(new QLabel(custom_lables.front(), this));
+			}
+		}
+		break;
+
+	case zoomMode::right:
+		if (start_lbl_index + custom_lables.size() < default_custom_lables.size()) {
+				custom_lables.push_back(default_custom_lables[start_lbl_index + custom_lables.size()]);
+				x_lables.push_back(new QLabel(custom_lables.back(), this));
+				custom_lables.pop_front();
+				x_lables.pop_front();
+				++start_lbl_index;
+		}
+		break;
+
+	case zoomMode::left:
+		if (start_lbl_index > 0) {
+				custom_lables.push_front(default_custom_lables[--start_lbl_index]);
+				x_lables.push_front(new QLabel(custom_lables.back(), this));
+				custom_lables.pop_back();
+				x_lables.pop_back();
+		}
+		break;
+
+	default:
+		break;
+	}
 }
