@@ -82,6 +82,7 @@ public:
 	}
 
 	QtPlotAbstract* getPlot() {return plot;};
+	QtPlotType::Plot type() {return plot_type;};
 
 public slots:
 	void slotDeleteMarker(QPointF&);
@@ -99,6 +100,7 @@ protected:
 private:
 	void moveMarkers();
 
+	QtPlotType::Plot plot_type;
 	QtPlotAbstract* plot;
 	QtPlotAxes* axes;
 

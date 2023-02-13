@@ -7,6 +7,7 @@
 QtPlotWidget::QtPlotWidget(QtPlotType::Plot plot_type, QWidget* parent) :
 	QWidget(parent)
 {
+	this->plot_type = plot_type;
 	setMinimumSize(320, 240);
 	axes = new QtPlotAxes(this);
 	switch (plot_type)
@@ -300,26 +301,36 @@ void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
 	
 	case Status::moving:
 		if (moving_started) {
-			auto interval = plot->getAxesInterval();
-			qreal delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / plot_size.width();
-			qreal delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / plot_size.height();
+			switch (plot_type)
+			{
+			case QtPlotType::Plot::Histogram:
+								
+				break;
+			
+			default:
+				auto interval = plot->getAxesInterval();
+				qreal delta_x = (interval[QtPlotType::Axis::X].to - interval[QtPlotType::Axis::X].from) / plot_size.width();
+				qreal delta_y = (interval[QtPlotType::Axis::Y].to - interval[QtPlotType::Axis::Y].from) / plot_size.height();
 
-			qreal pix_delta_x = event->position().x() - move_start_point.x();
-			qreal pix_delta_y = event->position().y() - move_start_point.y();
+				qreal pix_delta_x = event->position().x() - move_start_point.x();
+				qreal pix_delta_y = event->position().y() - move_start_point.y();
 
-			QtPlotType::QtPlotInterval new_interval(interval);
-			new_interval[QtPlotType::Axis::X].from = interval[QtPlotType::Axis::X].from - pix_delta_x * delta_x;
-			new_interval[QtPlotType::Axis::X].to = interval[QtPlotType::Axis::X].to - pix_delta_x * delta_x;
-			new_interval[QtPlotType::Axis::Y].from = interval[QtPlotType::Axis::Y].from + pix_delta_y * delta_y;
-			new_interval[QtPlotType::Axis::Y].to = interval[QtPlotType::Axis::Y].to + pix_delta_y * delta_y;
+				QtPlotType::QtPlotInterval new_interval(interval);
+				new_interval[QtPlotType::Axis::X].from = interval[QtPlotType::Axis::X].from - pix_delta_x * delta_x;
+				new_interval[QtPlotType::Axis::X].to = interval[QtPlotType::Axis::X].to - pix_delta_x * delta_x;
+				new_interval[QtPlotType::Axis::Y].from = interval[QtPlotType::Axis::Y].from + pix_delta_y * delta_y;
+				new_interval[QtPlotType::Axis::Y].to = interval[QtPlotType::Axis::Y].to + pix_delta_y * delta_y;
 
-			plot->setInterval(new_interval);
-			axes->setInterval(new_interval);
-			plot->repaint();
-			axes->repaint();
-			moveMarkers();
+				plot->setInterval(new_interval);
+				axes->setInterval(new_interval);
+				plot->repaint();
+				axes->repaint();
+				moveMarkers();
 
-			move_start_point = QPoint( event->position().toPoint() );
+				move_start_point = QPoint( event->position().toPoint() );
+
+				break;
+			}
 		}
 		break;
 	
