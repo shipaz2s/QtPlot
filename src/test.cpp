@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 	// std::vector<double> y_values_2 = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 
 	std::vector<double> x_values = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-	std::vector<double> y_values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	std::vector<double> y_values = {1, 2, 3, 4, -5, 6, 7, 8, 9, 10};
 	std::vector<double> x_values_2 = {1, 3, 5, 7, 9, 11, 12, 13, 14, 15};
 	std::vector<double> y_values_2 = {10, 9, 8, 7, -6, +5, 4, 3, 2, 1};
 

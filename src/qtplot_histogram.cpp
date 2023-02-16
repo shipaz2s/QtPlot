@@ -1,5 +1,6 @@
 #include "qtplot_histogram.h"
 
+#include <QLocale>
 #include <QPainter>
 
 void QtPlotHistogram::paintEvent(QPaintEvent* event)
@@ -34,17 +35,23 @@ void QtPlotHistogram::paintEvent(QPaintEvent* event)
 	int index = 0;
 	
 	int x0, y0;
-	for(auto iter = data.begin(); iter != data.end() ; ++iter) {
-		painter.setPen( QPen( QColor(0,0,0), 1) );
-		painter.setBrush( QBrush(colors[index]) );
-
+	QFontMetrics fm(this->font());
+	int text_height = fm.height();
+	for(auto iter = data.begin(); iter != data.end() ; ++iter){
 		for (int i = 0; i < min_data_count; i += 1) {
+			painter.setPen( QPen( QColor(0,0,0), 1) );
+			painter.setBrush( QBrush(colors[index]) );
 
 			x0 = i * dx + index * ddx;
 			int rect_w = ddx;
 
 			y0 = ( axes_interval[QtPlotType::Axis::Y].to - (*iter).y[i] ) * dy;
 			int rect_h = abs(zero_level - y0);
+
+			QString txt = locale().toString( (*iter).y[i], 'g' );
+			int text_width = fm.horizontalAdvance(txt);
+
+			int txt_y = y0;
 			if (y0 > zero_level) {
 				y0 = zero_level;
 			}
@@ -55,6 +62,16 @@ void QtPlotHistogram::paintEvent(QPaintEvent* event)
 				rect_w,
 				rect_h
 			);
+
+			auto bg_color = palette().color(backgroundRole());
+			auto fg_color = palette().color(foregroundRole());
+			bg_color.setAlpha(180);
+			painter.setBrush( QBrush( bg_color ) );
+			painter.setPen( QPen( QBrush( QColor(0,0,0, 0) ), 1 )  );
+
+			painter.drawRect(x0 + rect_w / 2 - text_width / 2, txt_y - text_height - y_margin, text_width, text_height);
+			painter.setPen( QPen( fg_color, 1 ) );
+			painter.drawText(x0 + rect_w / 2 - text_width / 2, txt_y - y_margin, txt);
 		}
 		++index;
 	}

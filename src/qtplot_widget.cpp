@@ -130,6 +130,10 @@ void QtPlotWidget::mousePressEvent(QMouseEvent *event)
 		break;
 
 	case Status::markering:
+		if (plot_type != QtPlotType::Plot::Plot) {
+			return;
+		}
+		
 		if (event->button() == Qt::LeftButton) {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
