@@ -74,6 +74,8 @@ public:
 			this->setMouseTracking(true);
 			plot->setMouseTracking(true);
 			axes->setMouseTracking(true);
+		} else if ( (status == Status::zooming_in or status == Status::zooming_out) && plot_type == QtPlotType::Plot::Histogram){
+
 		} else {
 			plot->setMouseTracking(true);
 			this->setMouseTracking(false);

@@ -245,65 +245,96 @@ void QtPlotWidget::mouseMoveEvent(QMouseEvent *event)
 	switch (status)
 	{
 	case Status::zooming_in:
-		if (zooming) {
+		if (plot_type != QtPlotType::Plot::Histogram) {
+			if (zooming) {
+				if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
+					if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
+
+						if (event->position().y() <= zoomer_start_point.y() && event->position().x() <= zoomer_start_point.x()) {
+							zoomer->move(event->position().x(), event->position().y());
+						} else if (event->position().y() <= zoomer_start_point.y()) {
+							zoomer->move(zoomer_start_point.x(), event->position().y());
+						} else if (event->position().x() <= zoomer_start_point.x()) {
+							zoomer->move(event->position().x(), zoomer_start_point.y());
+						}
+					} else {
+										
+						if (event->position().x() <= zoomer_start_point.x()) {
+							if ( event->position().y() <= plot_start_point.y() ) {
+								zoomer->move( event->position().x(), plot_start_point.y() );
+							}
+							else {
+								zoomer->move( event->position().x(), zoomer_start_point.y() );
+							}
+						}
+					}
+				} else if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
+
+					if ( event->position().y() <= zoomer_start_point.y() ) {
+
+						if ( event->position().x() <= plot_start_point.x() ) {
+							zoomer->move( plot_start_point.x(), event->position().y() );
+						}
+						else {
+							zoomer->move( zoomer_start_point.x(), event->position().y() );
+						}
+					}
+				}
+
+				int new_width;
+				int new_height;
+
+				if ( event->position().x() < plot_start_point.x() ) {
+					new_width = zoomer_start_point.x() - plot_start_point.x();
+				} else if ( event->position().x() > plot_start_point.x() + plot_size.width() ) {
+					new_width = plot_start_point.x() + plot_size.width() - zoomer_start_point.x();
+				} else {
+					new_width = abs(zoomer_start_point.x() - event->position().x());
+				}
+				
+				if ( event->position().y() < plot_start_point.y() ) {
+					new_height = zoomer_start_point.y() - plot_start_point.y();
+				} else if ( event->position().y() > plot_start_point.y() + plot_size.height() ) {
+					new_height = plot_start_point.y() + plot_size.height() - zoomer_start_point.y();
+				} else {
+					new_height = abs(zoomer_start_point.y() - event->position().y());
+				}
+
+				zoomer->resize( QSize( new_width, new_height ) );
+			}
+		} else {
 			if ( event->position().x() >= plot_start_point.x() && event->position().x() <= plot_start_point.x() + plot_size.width() ) {
 				if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
 
-					if (event->position().y() <= zoomer_start_point.y() && event->position().x() <= zoomer_start_point.x()) {
-						zoomer->move(event->position().x(), event->position().y());
-					} else if (event->position().y() <= zoomer_start_point.y()) {
-						zoomer->move(zoomer_start_point.x(), event->position().y());
-					} else if (event->position().x() <= zoomer_start_point.x()) {
-						zoomer->move(event->position().x(), zoomer_start_point.y());
+					if (
+							(event->position().y() > zoomer_start_point.y() + plot_size.height() * 0.8) &&
+							(event->position().x() >= zoomer_start_point.x() + plot_size.width() * 0.2)
+						)
+					{
+
+						setCursor( QCursor(QPixmap("resources/in_left_right_arrow.png")) );
+					} else if (
+							(event->position().y() <= zoomer_start_point.y() + plot_size.height() * 0.8) &&
+							(event->position().x() < zoomer_start_point.x() + plot_size.width() * 0.2)
+							) {
+
+						setCursor( QCursor(QPixmap("resources/in_up_down_arrow.png")) );
+					} else if (QCursor(Qt::ArrowCursor) == cursor()) {
+						setCursor( QCursor(QPixmap("resources/in_left_right_arrow.png")) );
 					}
 				} else {
 									
-					if (event->position().x() <= zoomer_start_point.x()) {
-						if ( event->position().y() <= plot_start_point.y() ) {
-							zoomer->move( event->position().x(), plot_start_point.y() );
-						}
-						else {
-							zoomer->move( event->position().x(), zoomer_start_point.y() );
-						}
-					}
-				}
-			} else if ( event->position().y() >= plot_start_point.y() && event->position().y() <= plot_start_point.y() + plot_size.height() ) {
-
-				if ( event->position().y() <= zoomer_start_point.y() ) {
-
-					if ( event->position().x() <= plot_start_point.x() ) {
-						zoomer->move( plot_start_point.x(), event->position().y() );
-					}
-					else {
-						zoomer->move( zoomer_start_point.x(), event->position().y() );
-					}
+					setCursor(Qt::ArrowCursor);
 				}
 			}
-
-			int new_width;
-			int new_height;
-
-			if ( event->position().x() < plot_start_point.x() ) {
-				new_width = zoomer_start_point.x() - plot_start_point.x();
-			} else if ( event->position().x() > plot_start_point.x() + plot_size.width() ) {
-				new_width = plot_start_point.x() + plot_size.width() - zoomer_start_point.x();
-			} else {
-				new_width = abs(zoomer_start_point.x() - event->position().x());
-			}
-			
-			if ( event->position().y() < plot_start_point.y() ) {
-				new_height = zoomer_start_point.y() - plot_start_point.y();
-			} else if ( event->position().y() > plot_start_point.y() + plot_size.height() ) {
-				new_height = plot_start_point.y() + plot_size.height() - zoomer_start_point.y();
-			} else {
-				new_height = abs(zoomer_start_point.y() - event->position().y());
-			}
-
-			zoomer->resize( QSize( new_width, new_height ) );
 		}
 		break;
 	
 	case Status::moving:
+		if (plot_type == QtPlotType::Plot::Histogram) {
+			break;
+		}
+
 		if (moving_started) {
 			switch (plot_type)
 			{
